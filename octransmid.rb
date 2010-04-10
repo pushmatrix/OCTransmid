@@ -63,16 +63,17 @@ class OCTransmid
   end
   
   def getSingleTrackMidiSequence
-    single_track_seq = Sequence.new()
+    # Generate a multi track sequence
     multi_track_seq = getMultipleTrackMidiSequence
     if multi_track_seq.nil?
       return
     end
+    # Take the multitrack sequence, and merge it down.
+    single_track_seq = Sequence.new()
+    track = Track.new( single_track_seq )
     
-    track = Track.new(single_track_seq)
-    
-    multi_track_seq.tracks.each do |t|
-     track.merge t.events
+    multi_track_seq.tracks.each do |other_track|
+     track.merge other_track.events
     end
     single_track_seq.tracks << track
     @seq = single_track_seq
