@@ -1,8 +1,0 @@
-TO DO: Better description
-
-Simply run:
-ruby octransmid.rb stop_number , where stop_number is the stop you want. 
-(ex: ruby octransmid.rb 7676)
-
-The output is a midi file that corresponds to the bus arrivals at that stop.
-
