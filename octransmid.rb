@@ -35,7 +35,7 @@ class OcTransmid
     end
 
     # Export the file
-    filename = "/midiexports/stop" << stopNumber << ".mid"
+    filename = "midiexports/stop" << stopNumber << ".mid"
     File.open(filename, 'wb') do | file |
    	  seq.write(file)
     end
