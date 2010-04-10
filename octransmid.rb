@@ -4,18 +4,6 @@ require 'midilib/consts'
 require 'optparse'
 include MIDI
 
-class ArrivalTime
-  def initialize( note, time)
-    @note = note
-    @time = time
-  end
-  def <=>(other) 
-    return self.time <=> other.time
-  end
-  attr_accessor :note, :time
-end
-
-
 class OCTransmid
   
   @@midi_directory = "midiexports/"
@@ -51,23 +39,24 @@ class OCTransmid
     end
     
     @seq = Sequence.new()
-    indi = 0
-    bus_arrivals.each do |busNumber,arrivals| 
-      indi+=1
+    bus_arrivals.each_with_index do |arrivals,index| 
+      bus_number = arrivals[0]
+      arrival_times = arrivals[1]
+      
       # Create a new MIDI track per bus route
       track = Track.new(@seq)
       @seq.tracks << track
       track.events << Controller.new(0, CC_VOLUME, 127)
       track.events << ProgramChange.new(0, 1, 0)
 
-      0.upto(arrivals.size-2).each do |i|
+      0.upto(arrival_times.size-2).each do |i|
         #time difference in seconds
-        delta = arrivals[i+1] - arrivals[i]
+        delta = arrival_times[i+1] - arrival_times[i]
         delta = delta.to_i
         if( delta < 0)
           delta *= -1
         end
-        new_note_event( @base_note + indi, @note_length, track,127, delta )
+        new_note_event( @base_note + index, @note_length, track,127, delta )
         end
     end
     return @seq
