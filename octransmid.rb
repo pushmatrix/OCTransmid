@@ -1,4 +1,4 @@
-require 'OCTranspoScraper.rb'
+require 'octransposcraper'
 require 'midilib/sequence'
 require 'midilib/consts'
 include MIDI
