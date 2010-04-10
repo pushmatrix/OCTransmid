@@ -1,25 +1,62 @@
-require 'OCTranspoScraper.rb'
+require 'octransposcraper.rb'
 require 'midilib/sequence'
 require 'midilib/consts'
+require 'optparse'
 include MIDI
 
-class OcTransmid
+class ArrivalTime
+  def initialize( note, time)
+    @note = note
+    @time = time
+  end
+  def <=>(other) 
+    return self.time <=> other.time
+  end
+  attr_accessor :note, :time
+end
+
+
+class OCTransmid
   
-  @@note_length = 1
-  @@base_note = 53
+  @@midi_directory = "midiexports/"
   
-  def initialize
+  def initialize ( stop_number,options )
     @scraper = OCTranspoScraper.new
+    @base_note = 50
+    @note_length = 1
+    @stop_number = stop_number
+    @seq = nil
+    
+    if options[:multitrack] 
+      return getMultipleTrackMidiSequence
+    else
+      return getSingleTrackMidiSequence
+    end
   end
   
-  def convert( stopNumber )
-    seq = Sequence.new()
-
-    bus_arrivals = @scraper.getBusStopArrivals( stopNumber )
-    bus_arrivals.each do |busNumber,arrivals|
+  def exportToMidi
+    filename = "stop" << @stop_number
+    unless @seq.nil?
+      File.open(@@midi_directory + filename +".mid", 'wb') do | file |
+     	  @seq.write(file)
+      end
+    end
+  end
+  
+  protected
+  def getMultipleTrackMidiSequence
+    bus_arrivals = @scraper.getBusStopArrivals( @stop_number )
+    if bus_arrivals.empty?
+      return 
+    end
+    
+    @seq = Sequence.new()
+    indi = 0
+    bus_arrivals.each do |busNumber,arrivals| 
+      indi+=1
       # Create a new MIDI track per bus route
-      track = Track.new(seq)
-      seq.tracks << track
+      track = Track.new(@seq)
+      @seq.tracks << track
       track.events << Controller.new(0, CC_VOLUME, 127)
       track.events << ProgramChange.new(0, 1, 0)
 
@@ -30,18 +67,30 @@ class OcTransmid
         if( delta < 0)
           delta *= -1
         end
-        new_note_event( @@base_note, @@note_length, track,127, delta )
-      end
+        new_note_event( @base_note + indi, @note_length, track,127, delta )
+        end
     end
-
-    # Export the file
-    filename = "midiexports/stop" << stopNumber << ".mid"
-    File.open(filename, 'wb') do | file |
-   	  seq.write(file)
-    end
+    return @seq
   end
   
-  private
+  def getSingleTrackMidiSequence
+    single_track_seq = Sequence.new()
+    multi_track_seq = getMultipleTrackMidiSequence
+    if multi_track_seq.nil?
+      return
+    end
+    
+    track = Track.new(single_track_seq)
+    
+    multi_track_seq.tracks.each do |t|
+     track.merge t.events
+    end
+    single_track_seq.tracks << track
+    @seq = single_track_seq
+    return @seq
+  end
+  
+  
   def new_note_event(note, note_length, track,velocity, delta)
     channel = 0
     track.events << NoteOnEvent.new(channel, note, velocity, delta)
@@ -50,7 +99,32 @@ class OcTransmid
   
 end
 
-transmid = OcTransmid.new
-if( ARGV.size > 0 )
-  transmid.convert(ARGV[0])
+
+
+
+# command line options
+options = {}
+
+optparse = OptionParser.new do|opts|
+
+  # Set a banner, displayed at the top
+  # of the help screen.
+  opts.banner = "Usage: octransmid.rb [options] stopNumber1 stopNumber2 ..."
+
+  # Define the options, and what they do
+  options[:multitrack] = false
+  opts.on( '-mt', 'Outputs as multitrack' ) do
+    options[:multitrack] = true
+  end
 end
+
+# parse the options out.
+optparse.parse!
+
+# generate a midi file for each stop specified
+ARGV.each do|stop_num|
+  puts "Generating midi file for stop #" << stop_num
+  transmid = OCTransmid.new( stop_num, options)
+  transmid.exportToMidi
+end
+
