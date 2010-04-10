@@ -1,4 +1,4 @@
-require 'octransposcraper.rb'
+require 'octransposcraper'
 require 'midilib/sequence'
 require 'midilib/consts'
 require 'optparse'
