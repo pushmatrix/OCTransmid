@@ -26,6 +26,14 @@ The current list of options are:
 
 + **mt** (*export the midi with under multitrack mode*)
 
+#How to use the MIDI files:
+
+What good are .mid files if you can't play with them? Well, in order to turn them into music, you need some sort of music production software that can import MIDI. For example, GarageBand on OSX.
+
+##GarageBand
+
+Open up a new garageband project, and simply drag the generated .mid file into it. If you have a multitrack midi, then each bus route will have its own track & instrument associated to it. Press play to hear da beats!
+
 #TODO:
 
 + A better description!

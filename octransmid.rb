@@ -23,7 +23,10 @@ class OCTransmid
   end
   
   def exportToMidi
-    filename = "stop" << @stop_number
+    filename = "stop" << @stop_number 
+    if(@seq.tracks.size > 1)
+      filename << "multi"
+    end
     unless @seq.nil?
       File.open(@@midi_directory + filename +".mid", 'wb') do | file |
      	  @seq.write(file)
