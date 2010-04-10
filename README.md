@@ -24,7 +24,7 @@ Simply run:
 
 The current list of options are:
 
-+ mt *export the midi with under multitrack mode*
++ **mt** (*export the midi with under multitrack mode*)
 
 #TODO:
 
