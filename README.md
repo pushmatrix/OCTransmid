@@ -30,6 +30,8 @@ The current list of options are:
 
 What good are .mid files if you can't play with them? Well, in order to turn them into music, you need some sort of music production software that can import MIDI. For example, GarageBand on OSX.
 
+Important Note: MIDI editing programs normally have a limit for how many simultaneous tracks they can process. Although Ableton Live can handle well over 100, Garageband caps off at 64. That being said, don't expect a multitrack version of Hurdman station (hundreds of buses go through) to be easily importable.
+
 ##GarageBand
 
 Open up a new garageband project, and simply drag the generated .mid file into it. If you have a multitrack midi, then each bus route will have its own track & instrument associated to it. Press play to hear da beats!
