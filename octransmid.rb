@@ -1,12 +1,23 @@
+# Fun Fact: Find bus stop numbers here: http://www.octranspo1.com/maps
+
 require 'octransposcraper'
 require 'midilib/sequence'
 require 'midilib/consts'
 require 'optparse'
 include MIDI
 
+
+
 class OCTransmid
   
   @@midi_directory = "midiexports/"
+  # Start the day at 6AM
+  @@day_start_time = Time.local(1,1,1,6,0,0)
+  # Pulses per quarter note. This needs to be at 500 so that
+  # when you specify a 1 millisecond delay, it actually is 1 millisecond.
+  @@ppqn = 500
+  
+  @@seconds_in_a_day = 60 * 60 * 24
   
   def initialize ( stop_number,options )
     @scraper = OCTranspoScraper.new
@@ -35,6 +46,8 @@ class OCTransmid
   end
   
   protected
+  
+  # TODO: Error Checking
   def getMultipleTrackMidiSequence
     bus_arrivals = @scraper.getBusStopArrivals( @stop_number )
     if bus_arrivals.empty?
@@ -42,7 +55,8 @@ class OCTransmid
     end
     
     @seq = Sequence.new()
-    bus_arrivals.each_with_index do |arrivals,index| 
+    @seq.ppqn = @@ppqn
+    bus_arrivals.each_with_index do |arrivals,index|
       bus_number = arrivals[0]
       arrival_times = arrivals[1]
       
@@ -52,19 +66,22 @@ class OCTransmid
       track.events << Controller.new(0, CC_VOLUME, 127)
       track.events << ProgramChange.new(0, 1, 0)
 
+      delta = arrival_times[0] - @@day_start_time
+      delta = delta.to_i
+      new_note_event( @base_note , @note_length, track,127, delta )
       0.upto(arrival_times.size-2).each do |i|
         #time difference in seconds
         delta = arrival_times[i+1] - arrival_times[i]
         delta = delta.to_i
         if( delta < 0)
           delta *= -1
+          delta = @@seconds_in_a_day - delta
         end
-        new_note_event( @base_note + index, @note_length, track,127, delta )
+        new_note_event( @base_note + index, @note_length, track,127, delta - @note_length )
         end
     end
     return @seq
   end
-  
   def getSingleTrackMidiSequence
     # Generate a multi track sequence
     multi_track_seq = getMultipleTrackMidiSequence
@@ -73,6 +90,7 @@ class OCTransmid
     end
     # Take the multitrack sequence, and merge it down.
     single_track_seq = Sequence.new()
+    single_track_seq.ppqn = @@ppqn
     track = Track.new( single_track_seq )
     
     multi_track_seq.tracks.each do |other_track|
@@ -87,7 +105,7 @@ class OCTransmid
   def new_note_event(note, note_length, track,velocity, delta)
     channel = 0
     track.events << NoteOnEvent.new(channel, note, velocity, delta)
-    track.events << NoteOffEvent.new(channel, note, velocity, note_length)
+    track.events << NoteOffEvent.new(channel, note, velocity, @note_length)
   end
   
 end

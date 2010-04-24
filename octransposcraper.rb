@@ -35,7 +35,7 @@ class OCTranspoScraper
   private
   
   # OCTranspo has the times as a string under the form hh:mm(A|P)M -- ex: 12:01AM 
-  # This converts it into military time, as well as stores it in a Date object.
+  # This converts it into military time, as well as stores it in a Time object.
   def formatTime( time )
      hours = 0
      minutes = 0
@@ -47,6 +47,11 @@ class OCTranspoScraper
           hours += 12
         end 
      end 
+     if time.include? "AM"
+       if (hours == 12)
+         hours = 0
+       end
+     end
      # The year, month and day are irrelevant. 
      return Time.local( 1, 1, 1, hours, minutes, 0)
   end
