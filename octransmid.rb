@@ -1,6 +1,6 @@
 # Fun Fact: Find bus stop numbers here: http://www.octranspo1.com/maps
 
-require 'octransposcraper'
+require './octransposcraper'
 require 'midilib/sequence'
 require 'midilib/consts'
 require 'optparse'

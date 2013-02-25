@@ -1,0 +1,10 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    midilib (2.0.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  midilib

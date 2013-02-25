@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'nokogiri'
 require 'open-uri'
 
@@ -57,31 +56,31 @@ class OCTranspoScraper
   end
 
   def getSubsetOfArrivals(stopNumber, group_index)
-     bus_arrivals = {}
-     params = "stop=" << stopNumber
-     
-     # Generate the query params. 
-     0.upto(@@result_limit_per_page-1).each do |i| 
-       bus_index = i + group_index * @@result_limit_per_page
-       params << "&check" << (bus_index).to_s << "=on"
-     end
-     
-     url = @@base_url + params + @@common_url_suffix 
-     doc = Nokogiri::HTML( open( url ) )
+    bus_arrivals = {}
+    params = "stop=" << stopNumber
+    
+    # Generate the query params. 
+    0.upto(@@result_limit_per_page-1).each do |i| 
+      bus_index = i + group_index * @@result_limit_per_page
+      params << "&check" << (bus_index).to_s << "=on"
+    end
 
-     0.upto(@@result_limit_per_page-1).each do |i|
-       bus_index = i + group_index * @@result_limit_per_page
-       list_of_times = []
-       table = doc.css( "table#StopTimesTimesListTable" << i.to_s )
-    	  table.css("td").each do |column|
-    	    #Remove all spaces and [D]'s
-    	    time = column.text.gsub(/\s|\[D\]/,"")
-    	    list_of_times << formatTime( time )
-  	    end
-    	  if !list_of_times.empty?
-    	    bus_arrivals[("bus" << bus_index.to_s).to_sym] = list_of_times
-  	    end
-     end
-     return bus_arrivals
+    
+    url = @@base_url + params + @@common_url_suffix 
+    doc = Nokogiri::HTML( open( url ) )
+    puts url
+
+    list_of_times = []
+    tables = doc.css("table.TripPlanDetailsResult")
+    tables.each_with_index do |table, index|
+      table.css("td").each do |column|
+        #Remove all spaces and [D]'s
+        time = column.text.gsub(/\s|\[D\]/,"")
+        puts time
+        list_of_times << formatTime( time )
+      end
+      bus_arrivals[("bus#{index}").to_sym] = list_of_times
+  	end
+    bus_arrivals
   end
 end
